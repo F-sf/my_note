@@ -33,7 +33,7 @@ def task(n, data):
         time.sleep(0.5)  # 用gevent实现多任务时，需要将所有耗时操作函数换成gevent内的对应函数
 
 gevent.joinall([
-            gevent.spawn(task, 5, "task1"),  #输入参数(函数，参数1, 参数2)
+            gevent.spawn(task, 5, "task1"),  #输入参数(函数，参数1, 参数2) 单独这一行相当于创建新任务并开始
             gevent.spawn(task, 5, "task2"),
             gevent.spawn(task, 5, "task3")
         ])

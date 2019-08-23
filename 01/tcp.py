@@ -20,7 +20,7 @@ def client():
     tcp_client_socket.send("content".encode("utf-8"))
 
     # 相对于udp,此处的recv_data仅有content
-    recv_data = tcp_client_socket.recvfrom(1024)
+    recv_data = tcp_client_socket.recv(1024)
     
     #-------------------------------关闭---------------------------------
 
@@ -50,9 +50,9 @@ def server():
     client_socket.send("content".encode("utf-8"))
 
     # 相对于udp,此处的recv_data仅有content
-    recv_data = client_socket.recvfrom(1024)
+    recv_data = client_socket.recv(1024)
 
     #-------------------------------关闭---------------------------------
-
-    tcp_client_socket.close()
+    client_socket.close()
+    tcp_server_socket.close()
 
