@@ -1,6 +1,4 @@
-# 2019自习笔记
-
-### 1.CMakeLists相关
+# 2019暑假自习笔记
 
 #### g++操作
 
@@ -44,20 +42,6 @@
 * 为可执行文件name添加动态/静态链接库libaaa.so/libaaa.a: `target_link_libraries(name aaa)`
 
 * 另外有一个link_libraries() 的命令，用在add_executable/add_library之前，作用和target_link_libraries相同，同类命令link_directories() ，指定到库的路径而不是库本身
-
-#### Nvidia独显驱动安装
-
-```
-https://linuxconfig.org/how-to-install-the-nvidia-drivers-on-ubuntu-18-04-bionic-beaver-linux
-按上网站方法一配置后重启时在perform mok management界面选择enroll mok
-```
-
-#### 修改grub
-
-```shell
-sudo vim /etc/default/grub
-sudo update-grub
-```
 
 #### Gazebo
 
@@ -172,17 +156,30 @@ sudo update-grub
 > <node name="rviz" pkg="rviz" type="rviz" args="$(find sw2urdf_trial)/rviz/urdf.rviz" />
 > ```
 >
-> 
 
 #### Python
 
-- python文件读写可以用f = open(filepath, 'r'/'w'/'a')，也可以用with open(filepath, 'r'/'w'/'a') as f :  区别是后者不需要f.close()
+* 成熟的设计应保证程序完成后不需要进入改动，可将必须的配置参数存入配置文件，在配置文件中进行更改
+* python文件读写可以用f = open(filepath, 'r'/'w'/'a')，也可以用with open(filepath, 'r'/'w'/'a') as f :  区别是后者不需要f.close()
 
 - python读取命令行参数可以用sys.argv[]，也可以用argparse模块，后者较标准，可以产生-h。
 
+  ```python
+  import argparse
+  parser = argparse.ArgumentParser()  # 拿取解析器实例
+  parser.description = "Search string recursively in folder"
+  parser.add_argument("Path", help="Search path", type=str)  # 添加参数和帮助说明
+  parser.add_argument("String", help="Object string", type=str)
+  args = parser.parse_args()  # 拿取输入参数
+  if len(sys.argv) != 3:
+      parser.print_help()  # 打印帮助信息
+      sys.exit(1)
+  print(args.Path,args.String)  # 调用参数
+  ```
+
 - python的字典3.5之前是无序的，3.6之后为有序
 
-- print小技巧: \r回车与end=""取消末尾自动换行可起到同行不断刷新的效果
+- print小技巧: \r回车与end=""取消末尾自动换行可起到同行不断刷新的效果(only in python3)
 
   ```python
   print("/rDownloading:{:.2f}".format(download_rate), end="")
@@ -202,13 +199,50 @@ sudo update-grub
 
 - python中列表推导式的使用技巧
 
-- 在成功import的情况下，多次import只有第一次会有效，
-
-  若想重新导入需要使用`from imp import reload`, `reload(module)`来重新导入
-
 - 关于单双引号，习惯上长段双引号，短段单引号; docstring三双引号，较短时可写成单行。
 
 - pop, del, remove：pop和del都是针对索引，remove针对内容; pop返回内容，del无返回
+
+- 关于import的二三事
+
+  > 1. import的默认路径可在sys.path中找到。可使用sys.path.append()加入新路径
+  > 2. import aaa时，会直接将aaa当作模块名，也就是说无法使用变量aaa存储模块名进行导入
+  > 3. 若想使用aaa='model_name'进行import，可使用\__import__(aaa)，输入为字符串，返回为模块实例
+  > 4. 在成功import的情况下，多次import只有第一次会有效，所以修改文件后在交互界面再次import时无法更新。 若想重新导入需要使用`from imp import reload`, `reload(module)`来重新导入
+
+- 关于python中的eval(source, globals=None, locals=None)    evalute
+
+  > 用于将一个字符串source转化成有效的表达式，包括变量，函数，列表/字典等，功能十分强大
+  >
+  > e.g: eval("os.system('clear')")执行系统命令	eval("func_name")()执行函数
+  >
+  > ​	   eval("{'a': 1,'b': 2,'c': 3}")返回一个字典，可用于将配置文件写成字典格式，读入后用eval处理
+  >
+  > 但由于其可以调用系统命令，故使用时需要注意安全
+  
+- 关于python函数传入参数的二三事
+
+  > 传入参数有四种，包括必选参数，默认参数，可变参数，关键字参数
+  >
+  > def fun(a, b=1, *args, **kwargs): 
+  >
+  > a: 必选参数
+  >
+  > b: 默认参数，可缺省以使用默认值1，也可用fun(1, b=2)指定为新值
+  >
+  > *args: 可变参数，如11, 22, 33等会以元组形式存入args。调用: args[index]
+  >
+  > **kwargs: 关键字参数，如arg1 = 11, arg2 = 22的参数会以字典的形式存入kwargs。调用: kwargs[key]
+  >
+  > Ps: 在函数内部的其他函数的传入参数中使用*args或**kwargs表示拆包，即将元组/字典变回其输入时原来的样子
+  
+- 匿名函数：无函数名，直接返回引用的简单函数，用于暂时实现简单功能
+
+  ```python
+  # 引用 = lambda 参数: 返回值
+  cal_dis = lambda p1,p2: sqrt( (p1[0]-p2[0])**2 + (p1[1]-p2[1])**2 )  # 计算两点间距离
+  cal_dis([1,1], [2,2])  # 1.41421
+  ```
 
 #### 杂记
 
@@ -244,8 +278,6 @@ sudo update-grub
   上述语句用xacro包下的xacro程序将rrbot_description包下的rrbot.xacro解析成URDF并存在rrbot_description这一参数上
   ```
 
-  
-
 * vim中寄存器常用的为`无名寄存器""`,`系统剪贴板"+`,输入模式下可用<C+r>加寄存器号调用其内容
 
 * vim映射设置中回车用<CR>,tab用<Tab>,<Leader>键默认为反斜杠`\`
@@ -274,6 +306,26 @@ sudo update-grub
   使push时不用每次都输入密码，具体原理有待深入研究
   git config --global credential.helper store
   ```
+
+* linux后台运行且不随终端关闭而关闭：`nohup command&` (no hangup不挂断)
+
+* `F5`和`Ctrl+R`的区别：F5刷新可能会使用浏览器的缓存内容，可能不是真的重新向服务器发送请求。Ctrl+R则是真正的重新向服务器发送请求的刷新。
+
+* Nvidia独显驱动安装
+
+  ```
+  https://linuxconfig.org/how-to-install-the-nvidia-drivers-on-ubuntu-18-04-bionic-beaver-linux
+  按上网站方法一配置后重启时在perform mok management界面选择enroll mok
+  ```
+
+* 修改grub
+
+  ```shell
+  sudo vim /etc/default/grub
+  sudo update-grub
+  ```
+
+  #### 
 
 # 课程笔记
 
@@ -526,9 +578,6 @@ re.split(r':| ', "info:aaa bbb ccc")
 * 类的继承中，其`super().__init__()`的调用顺序在`class.__mro__`中显示
 * 调用父类init函数的方式: `Parent.__init__()`, `super().__init__()`, `super(Class, self).__init__()`
 
-* def fun(a, b, *args, **kwargs): 如此定义函数，为不定长参数，a，b为必须。其余的参数形如11, 22, 33等会被以元组形式存入args，形如arg1 = 11, arg2 = 22的参数会被以字典的形式存入kwargs
-
-  > *tuple, **dict意为对元组和字典进行拆包，但好像只能在函数内这么用
 
 #### 类相关的一些知识点
 
@@ -677,5 +726,86 @@ re.split(r':| ', "info:aaa bbb ccc")
 
 * mysql主从：可在多台机器配置数据库的主从，实现主从数据库间的实时同步。可用于数据库的备份，多台机器分摊访问压力以实现负载均衡等应用
 
-### Web框架
+### mini-web框架
+
+常用的静态Web服务器：Apache、Nginx、Lighttpd
+
+常用的动态页面框架：Django，flask
+
+一般会将动态请求和静态资源分开处理，动态请求调用web框架，静态资源直接拿取数据
+
+#### WSGI (Web Server Gateway Interface)
+
+> WSGI是一种标准接口，用于python web编程中服务器和动态页面框架之间的接口标准化。可以帮助使用者将HTTP协议的解析和拼装封装起来，使其专注于业务代码的编写。
+
+```python
+# 基本接口定义，application在服务器中被调用，传入服务器中实现的start_response函数引用，来拼接HTTP的header，environ传递一个包含所有http请求信息的字典，return返回HTTP的body
+def application(environ, start_response):
+    start_response('200 OK', [('Content-Type', 'text/html')，])
+    return [b'<h1>Hello, web!</h1>']
+```
+
+#### 闭包
+
+何为闭包：
+
+```python
+def line(k,b)：
+	def y(x):
+        return(k*x + b)
+    return y
+line1 = line(1,2)
+line2 = line(11,22)
+line1(1)  # 1*1+2, 返回3
+line2(1)  # 11*1+22, 返回33
+# line函数返回其内部定义的y函数的引用，但这个y的引用在寻找其内部用到的k和b时会向上逐层寻找，所以会对应到创建这个引用时外层函数的变量，由此实现一个比类更节省储存空间，但实现相似功能的结构。(因为类默认继承object，其内部有大量父类的方法)
+```
+
+可以理解为闭包的本体就是内层的函数，但使用该函数之前需要多一步创建，同时可以让该函数拥有一些类似与类的特性：即可以对外层参数进行修改，创建不同的引用来进行复用
+
+> 记一个闭包中反直觉的坑：
+>
+> ```python
+> x = 3
+> def fun1():
+>     x = 2:
+>     def fun2():
+>         print(x)
+>         x = 3
+>         print(x)
+>     return fun2
+> fun2 = fun1()
+> fun2()
+> # -----运行结果-----
+> # 第五行报错: UnboundLocalError: local variable 'x' referenced before assignment
+> # 原因：解释器认为在fun2中x为x = 3行定义的局部变量，因此第五行被认为是一次定义前引用
+> # 解决方法：在fun2第一行加入nolocal x, 其作用可类比global关键字，用于修改闭包的外层参数
+> ```
+>
+
+#### 装饰器
+
+装饰器的作用是在不更改某个函数的情况下，在其开头或结尾进行内容的添加，其具体实现其实是闭包(也可用类，但用类实现会占用更多空间，没有必要)
+
+```python
+def mydecorator(func):  # 参考闭包原理，func指向原来的base_func
+    def new_func(*args, **kwargs):  # 新的base_func指向new_func，这种参数写法可以适应所有情况
+        print('----do something new before base_func')
+        base_func_ret = func(*args, **kwargs)  # 对不定长参数进行拆包
+        print('----do something new after base_func')
+        return base_func_ret
+    return new_func  # 将new_func返回给新的base_func
+    
+@mydecorator  # 此处的装饰实际上是一种语法糖，其本意为base_func = mydecorator(base_func)
+def base_func(arg1, arg2):
+    do_something()
+    return retrun_something()
+
+# 一个装饰器可以装饰多个函数，一个函数也可以被多个装饰器装饰，如：
+@decorator1
+@decorator2
+def base_func():
+    pass
+# 此时可理解为装饰器2为内层装饰器，装饰器1为外层装饰器，也就是说实际执行顺序为1前，2前，2后，1后
+```
 
