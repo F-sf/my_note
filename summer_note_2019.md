@@ -548,7 +548,7 @@ re.split(r':| ', "info:aaa bbb ccc")
 * ```python
   import copy
   copy.deepcopy()  # 深拷贝，一直拷贝到最深层的对象
-  copy.copy() \ xxx.copy() \ [:]  # 这些均属于浅拷贝，只拷贝最上面一层
+  copy.copy()  # copy.copy()以及list/dict.copy(), 切片[:]等均属于浅拷贝，只拷贝最上面一层
   ```
 
 * python中最特殊的几个类：int, float, double, string, tuple等类比较特殊，属于不可变类，也只有他们有\__hash__方法，也就是说只有他们可以作为字典的key。这些类实例化以后我们便不能修改，像a=1 \ a=2这种操作相当于为变量a指向了一个新地址处存放的 新int实例。故无法也无需对这些类型使用拷贝。
