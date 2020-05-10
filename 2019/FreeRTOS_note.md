@@ -53,7 +53,7 @@ typedef struct tskTaskControlBlock
 } tskTCB;
 typedef tskTCB TCB_t;
 
-// 列表:FreeRTOS中最核心的数据结构之一
+// 列表:FreeRTOS中最核心的数据结构之一，每个任务都具有一个状态列表项和一个事件列表项，这两个列表项分别挂在哪个列表上就可以完全表示该任务当前处于何种状态。
 typedef struct xLIST
 {
 	listFIRST_LIST_INTEGRITY_CHECK_VALUE			  // 完整性校验1
@@ -116,13 +116,13 @@ PRIVILEGED_DATA static volatile TickType_t xTickCount;  /* 系统时钟计数 */
 /* 以下均属于状态列表，任务控制块成员变量中的状态列表项会存在以下列表中的某一个 */
 PRIVILEGED_DATAstatic List_t pxReadyTasksLists[ configMAX_PRIORITIES ]; /*就绪任务列表数组*/
 /* 因为FreeRTOS管理延时是通过List_t中列表项的升序排列，故计数器溢出会影响正常逻辑，所以取两个管理延时的列表，如果延时时算出的目标计数小于当前计数，则存在当前列表的另一个列表，发生溢出时将两列表调换即可 */
-PRIVILEGED_DATA static List_t * volatile pxDelayedTaskList; /* 指向当前使用的延时List_t */
-PRIVILEGED_DATAstatic List_t xDelayedTaskList1;			/* 延时的任务1 */
-PRIVILEGED_DATA static List_t * volatile pxOverflowDelayedTaskList; /*指向溢出的延时List_t*/
-PRIVILEGED_DATAstatic List_t xDelayedTaskList2;			/* 延时的任务2 */
-PRIVILEGED_DATAstatic List_t xPendingReadyList; 		/* 任务已就绪,但调度器被挂起 */
-PRIVILEGED_DATA static List_t xTasksWaitingTermination; /* 任务已经被删除,但内存尚未释放 */
-PRIVILEGED_DATA static List_t xSuspendedTaskList;       /* 当前挂起的任务 */
+PRIVILEGED_DATA static List_t * volatile pxDelayedTaskList; /* 指向当前使用的非溢出延时列表 */
+PRIVILEGED_DATAstatic List_t xDelayedTaskList1;			/* 延时列表1 */
+PRIVILEGED_DATA static List_t * volatile pxOverflowDelayedTaskList; /*指向溢出延时列表*/
+PRIVILEGED_DATAstatic List_t xDelayedTaskList2;			/* 延时列表2 */
+PRIVILEGED_DATAstatic List_t xPendingReadyList; 		/* 任务已就绪,但调度器被挂起的列表 */
+PRIVILEGED_DATA static List_t xTasksWaitingTermination; /* 任务已被删除,但内存尚未释放的列表 */
+PRIVILEGED_DATA static List_t xSuspendedTaskList;       /* 当前挂起的任务列表 */
 ```
 
 ### 任务
@@ -191,7 +191,7 @@ PRIVILEGED_DATA static List_t xSuspendedTaskList;       /* 当前挂起的任务
 
 * 原理是在任务控制块加了通知状态和通知值两个成员变量。
 * 可以用小很多的RAM和CPU资源实现轻量级的信号量，消息邮箱，事件标志组的机制。
-* 局限性在于发送事件时不能阻塞，而且基于任务控制块实现，一个任务受多个控制，不能多个任务受一个事件控制；灵活性不如常规事件，但大多数情况下其提供的功能已然足够。
+* 局限性在于发送事件时不能阻塞，而且基于任务控制块实现，可以一个任务受多个控制，但不能多个任务受一个事件控制；灵活性不如常规事件，但大多数情况下其提供的功能已然足够。
 
 ### Question
 
