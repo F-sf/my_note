@@ -1,4 +1,4 @@
-# Angular
+# Angular2
 
 js写的前端框架
 
@@ -150,7 +150,7 @@ public keyUpFunc(e){
 
 ``` typescript
 // 使用双向绑定需要在module.ts中引入FormsModule
-import { FormsModule } from '@angular/forms'
+import { FormsModule } from '@angular/forms';
 @NgModule({
 	// ...
   	imports: [
@@ -160,12 +160,12 @@ import { FormsModule } from '@angular/forms'
   	// ...
 })
 // 在目标组件类中添加属性
-public data:string = "TestData";
+data:string = "TestData";
 ```
 
 ```3html
 // []表示绑定属性，()表示绑定事件
-<input type="text" [(ngModule)]='keywords' />  // keywords为进行双向绑定的表达式
+<input type="text" [(ngModule)]='data' />  // keywords为进行双向绑定的表达式
 ```
 
 ### 4.10 服务
@@ -400,3 +400,62 @@ const routes: Routes = [
 ###  自定义样式设计思路
 
 * 可通过一个父级div加入文本或图片进行完全放飞自我的设计，然后其实际对应的功能作为子元素加入，放到很大之后通过opacity和父级中加入overflow的方式使其做到外观和实际功能完全分离，且将功能的触发范围限制在外观之内。`这思路太有意思了...`
+
+### ng-click和(click)
+
+​	这两种风格分别是ng1和ng2的写法，ng1和ng2在使用和组织逻辑上可以说基本完全没有关系。网上很多博客仍保留前一种写法。使用ng2时设计思路完全组件化，模块化，比1更清晰、好复用、易上手。
+
+### 强制类型转换
+
+​	开发中遇到问题：对于某个input标签`document.getElementById("blog-file-input").files`会报错如下`Property 'files' does not exist on type 'HTMLElement'`。因为getElementById返回的默认类型为HTMLElement，需要用`(<HTMLInputElement> document.getElementById("blog-file-input")).files`进行类型转换才可跳过IDE的语法检查。
+
+​	上述报错仅为IDE报错，浏览器中直接按第一种写法是可以运行的。-_-||
+
+​	ts中的类型转换语法为<Type> a。
+
+### Angular中使用JQuery
+
+```shell
+cnpm install jquery --save
+npm install @types/jquery --save
+# --save可将jquery和@types/jquery的依赖存入package.json
+# 然后在需要使用jquery的ts文件中引入即可
+# import * as $ from 'jquery';
+```
+
+> jquery和原生DOM虽然风格迥异，但其目的都是一样的。
+
+### 文件下载问题
+
+> 文件下载即可通过前端操作，也可通过后端操作。但一番折腾下来还是前端比较方便。
+
+​	整体来说前端下载有用<a>标签的download属性、和新建一个窗口然后window.open()两种方式。a标签应该是全面优于开新窗口。操作方式如下所示：
+
+```js
+const a = document.createElement('a');
+a.setAttribute('download', '文件名,不需加后缀');
+a.setAttribute('href', '要下载文件的URL');
+a.click();
+```
+
+​	操作方式主要有两种思路，一是对于**已然确定的单个要下载的文件**，可以直接用上述代码定位到其URL。另一种是需要下载一系列文件，在后端打成压缩包后传输，这时我摸索的解决方法是在后端将压缩文件的二进制字节流直接写入http包的content，然后在前端设置好接收的类型为blob二进制字节流，然后将其转为URL再进行下载。
+
+​	整个代码段如下：
+
+```js
+this.http.post(this.blogsURL+'downloadBlog', jsonObj, {responseType:'blob'}).subscribe(response=>{
+    const blob = new Blob([response], { type: "application/zip" });
+    const a = document.createElement('a');
+    a.setAttribute('download', title);
+    a.setAttribute('href', URL.createObjectURL(blob));
+    a.click();
+});
+```
+
+### Angular中接收http返回的坑
+
+​	`this.http.get("url").subscribe(res=>{});`这种形式接收返回包时默认将content按json解析，若在使用Angular时遇到**Unexpected token in JSON at position 0**报错，很可能是此处引发的问题。
+
+​	解决方法为手动设置返回类型如下：`this.http.get("url"，{responseType:'blob'}).subscribe(res=>{});`
+
+​	其中responseType可设置为 json，arraybuffer，blob，text四种
