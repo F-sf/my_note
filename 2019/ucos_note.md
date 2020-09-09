@@ -1547,7 +1547,7 @@ OS_EVENT  *OSQCreate (void    **start,
             pevent->OSEventCnt     = 0u;
             pevent->OSEventPtr     = pq;
             OS_EventWaitListInit(pevent);  /* 清空等待任务优先级表 */ 
-        } else {     /* 若队列控制块为空，将任务控制块送回空闲链表 */
+        } else {     /* 若队列控制块为空，将事件控制块送回空闲链表 */
             pevent->OSEventPtr = (void *)OSEventFreeList; 
             OSEventFreeList    = pevent;
             OS_EXIT_CRITICAL();
